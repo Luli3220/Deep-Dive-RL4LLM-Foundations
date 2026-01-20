@@ -12,13 +12,13 @@
   - [1.5 奖励（Reward）](#reward)
   - [1.6 策略（Policy）](#policy)
 - [RL优化目标](#rl-objectives)
-  - [2.1 回报 (Return)](#return)（$G_t$）
+  - [2.1 回报 (Return)](#return)
   - [2.2 状态值函数(State-Value Function)](#state-value)
   - [2.3. 动作价值函数 (Action-Value Function)](#action-value)
   - [2.4. 优势函数 Advantage Function](#advantage)
 - [贝尔曼方程详细推导](#bellman-derivations)
-  - [V 的推导](#V-derivation)（$V_{\pi}(s_t)$）
-  - [Q 的推导](#q-derivation)（$Q_{\pi}(s_t, a_t)$）
+  - [V 的推导](#V-derivation)
+  - [Q 的推导](#q-derivation)
 - [参考资料](#references)
 
 <a id="key-terms"></a>
@@ -232,7 +232,7 @@ $$
 A_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t] - \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t]
 $$
 
-由于 $ V_{\pi}(s) = E_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s]$，上式也可写为：
+由于 $V_{\pi}(s) = E_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s]$，上式也可写为：
 
 $$
 A_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t] - V_{\pi}(s_t)
@@ -323,16 +323,16 @@ $$
 
 #### 建立动作价值之间的联系
 
-* 同理把 $\mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t]$ 用全期望公式按下一状态 $S_{t+1}$ 展开：
+* 同理把 $\mathbf{E}[G_{t+1} \mid S_t = s_t, A_t = a_t]$ 用全期望公式按下一状态 $S_{t+1}$ 展开：
 
   $$
-  \mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t] = \sum_{s_{t+1}} \mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] p(s_{t+1} \mid s_t, a_t)
+  \mathbf{E}[G_{t+1} \mid S_t = s_t, A_t = a_t] = \sum_{s_{t+1}} \mathbf{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] p(s_{t+1} \mid s_t, a_t)
   $$
 
 * 由马尔可夫性，给定 $S_{t+1}$ 后，未来回报 $G_{t+1}$ 与过去 $(S_t, A_t)$ 无关，因此：
 
   $$
-  \mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] = \mathbb{E}[G_{t+1} \mid S_{t+1} = s_{t+1}] = V(s_{t+1})
+  \mathbf{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] = \mathbf{E}[G_{t+1} \mid S_{t+1} = s_{t+1}] = V(s_{t+1})
   $$
 
 将其代回上一个式子得，
