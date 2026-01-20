@@ -36,6 +36,7 @@
 * **目标**：最大化生成序列的期望奖励
 
 从形式上看，LLM 定义了一个参数化策略：
+
 $$
 \pi_\theta(a_t \mid s_t)
 $$
@@ -57,6 +58,7 @@ $$
 * 在序列结束后（或中间），环境给出奖励
 
 整个交互过程可以写为：
+
 $$
 s_{t+1} = \text{Concat}(s_t, a_t)
 $$
@@ -72,6 +74,7 @@ $$
 
 **Prompt + 已生成的 Token 序列**
 即： 
+
 $$
 s_t = (x, a_1, a_2, \dots, a_{t-1})
 $$
@@ -89,6 +92,7 @@ $$
 
 * 动作空间是 **词表 $( \mathcal{V} ) $**
 * 每一步的动作是选择一个 Token：
+
   $$
   a_t \in \mathcal{V}
   $$
@@ -107,6 +111,7 @@ $$
 * **基于规则的奖励（RLVR）**
 
 例如，在数学推理任务中：
+
 $$
 r =
 \begin{cases}
@@ -123,14 +128,17 @@ $$
 **策略（Policy）** 定义了智能体在不同状态下如何选择动作。
 
 在 RL4LLM 中，策略就是 **LLM 的参数化概率分布**：
+
 $$
 \pi_\theta(a_t \mid s_t) = P_\theta(\text{next token} = a_t \mid \text{context } s_t)
 $$
 
 训练的核心目标是找到最优参数：
+
 $$
 \theta^* = \arg\max_\theta \; \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]
 $$
+
 其中：
 
 * $(\tau)$ 是生成的一整个 Token 序列
@@ -166,7 +174,9 @@ $$
 
 展开期望计算([详细推导](#V-derivation))：
 
-$$V_{\pi}(s_t) = \mathbb{E}_{\pi} [R_t + \gamma G_{t+1} \mid S_t = s_t] = \mathbb{E}_{\pi} [R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t]$$
+$$
+V_{\pi}(s_t) = \mathbb{E}_{\pi} [R_t + \gamma G_{t+1} \mid S_t = s_t] = \mathbb{E}_{\pi} [R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t]
+$$
 
 这个递归形式被称为 **贝尔曼方程 (Bellman equation)**，用于计算状态值函数。
 
@@ -176,13 +186,17 @@ $$V_{\pi}(s_t) = \mathbb{E}_{\pi} [R_t + \gamma G_{t+1} \mid S_t = s_t] = \mathb
 
 动作价值函数 $Q(s_t, a_t)$ 衡量在状态 $s_t$ 下采取特定动作 $a_t$ 后，按照策略 $\pi$ 继续执行时的期望回报：
 
-$$Q_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[G_t \mid S_t = s_t, A_t = a_t]$$
+$$
+Q_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[G_t \mid S_t = s_t, A_t = a_t]
+$$
 
 这表示在状态 $s_t$ 采取动作 $a_t$ 后，未来的累积回报的期望。
 
 同样展开期望([详细推导](#q-derivation))：
 
-$$Q_{\pi}(s_t, a_t) = \mathbb{E}_{\pi} [R_t + \gamma G_{t+1} \mid S_t = s_t, A_t = a_t] = \mathbb{E}_{\pi} [R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t]$$
+$$
+Q_{\pi}(s_t, a_t) = \mathbb{E}_{\pi} [R_t + \gamma G_{t+1} \mid S_t = s_t, A_t = a_t] = \mathbb{E}_{\pi} [R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t]
+$$
 
 这表示在状态 $s_t$ 采取动作 $a_t$ 后，未来的累积回报的期望。
 
@@ -193,7 +207,9 @@ $$Q_{\pi}(s_t, a_t) = \mathbb{E}_{\pi} [R_t + \gamma G_{t+1} \mid S_t = s_t, A_t
 动作价值函数与状态值函数的区别在于：$Q(s_t, a_t)$是当前状态 $s_t$ 做出行动 $a_t$后的期望奖励。
 由此我们依此得到我们的优势函数：$A(s_t, a_t)$ 衡量某个动作 $a_t$ 在状态 $s_t$ 处比平均值（即状态值）好多少：
 
-$$A_{\pi}(s_t, a_t) = Q_{\pi}(s_t, a_t) - V_{\pi}(s_t)$$
+$$
+A_{\pi}(s_t, a_t) = Q_{\pi}(s_t, a_t) - V_{\pi}(s_t)
+$$
 
 这表示：
 
@@ -202,17 +218,25 @@ $$A_{\pi}(s_t, a_t) = Q_{\pi}(s_t, a_t) - V_{\pi}(s_t)$$
 
 由状态值与动作值的贝尔曼方程：
 
-$$V_{\pi}(s_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t]$$
+$$
+V_{\pi}(s_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t]
+$$
 
-$$Q_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t]$$
+$$
+Q_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t]
+$$
 
 两式相减即可得到优势函数的等价形式：
 
-$$A_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t] - \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t]$$
+$$
+A_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t] - \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t]
+$$
 
 由于 $V_{\pi}(s) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s]$，上式也可写为：
 
-$$A_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t] - V_{\pi}(s_t)$$
+$$
+A_{\pi}(s_t, a_t) = \mathbb{E}_{\pi}[R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t] - V_{\pi}(s_t)
+$$
 
 这样我们就可以得到一个只依赖于状态价值函数的一个优化目标了。
 
@@ -233,6 +257,7 @@ $$
 ### 推导如下:
 
 #### 首先将$V(s_t)$展开
+
 $$
 \begin{aligned}
 V(s_t) &= \mathbb{E}[G_t \mid S_t = s_t] \quad \text{（状态价值函数的定义）} \\
@@ -251,15 +276,21 @@ $$
 
 那么由全期望公式我们可以得到：
 
-$$\mathbb{E}[G_{t+1} \mid S_t = s_t] = \sum_{s_{t+1}} \mathbb{E}[G_{t+1} \mid S_t = s_t, S_{t+1} = s_{t+1}] p(s_{t+1} \mid s_t)$$
+$$
+\mathbb{E}[G_{t+1} \mid S_t = s_t] = \sum_{s_{t+1}} \mathbb{E}[G_{t+1} \mid S_t = s_t, S_{t+1} = s_{t+1}] p(s_{t+1} \mid s_t)
+$$
 
 再由于马尔可夫性，$G_{t+1}$ 其实只和 $s_{t+1}$ 有关，和 $s_t$ 无关，可以理解为 **（未来的状态只取决于现在，而与过去无关）** 因此：
 
-$$\mathbb{E}[G_{t+1} \mid S_t = s_t, S_{t+1} = s_{t+1}] = \mathbb{E}[G_{t+1} \mid S_{t+1} = s_{t+1}] = V(s_{t+1})$$
+$$
+\mathbb{E}[G_{t+1} \mid S_t = s_t, S_{t+1} = s_{t+1}] = \mathbb{E}[G_{t+1} \mid S_{t+1} = s_{t+1}] = V(s_{t+1})
+$$
 
 将其代回上一个式子得，
 
-$$\mathbb{E}[G_{t+1} \mid S_t = s_t] = \sum_{s_{t+1}} V(s_{t+1}) p(s_{t+1} \mid s_t) = \mathbb{E}[V_{t+1} \mid S_t = s_t]$$
+$$
+\mathbb{E}[G_{t+1} \mid S_t = s_t] = \sum_{s_{t+1}} V(s_{t+1}) p(s_{t+1} \mid s_t) = \mathbb{E}[V_{t+1} \mid S_t = s_t]
+$$
 
 综上
 
@@ -293,14 +324,20 @@ $$
 #### 建立动作价值之间的联系
 
 * 同理把 $\mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t]$ 用全期望公式按下一状态 $S_{t+1}$ 展开：
-  $$\mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t] = \sum_{s_{t+1}} \mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] p(s_{t+1} \mid s_t, a_t)$$
+  $$
+  \mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t] = \sum_{s_{t+1}} \mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] p(s_{t+1} \mid s_t, a_t)
+  $$
 
 * 由马尔可夫性，给定 $S_{t+1}$ 后，未来回报 $G_{t+1}$ 与过去 $(S_t, A_t)$ 无关，因此：
-  $$\mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] = \mathbb{E}[G_{t+1} \mid S_{t+1} = s_{t+1}] = V(s_{t+1})$$
+  $$
+  \mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] = \mathbb{E}[G_{t+1} \mid S_{t+1} = s_{t+1}] = V(s_{t+1})
+  $$
 
 将其代回上一个式子得，
 
-$$\mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t] = \sum_{s_{t+1}} V(s_{t+1}) p(s_{t+1} \mid s_t, a_t) = \mathbb{E}[V_{t+1} \mid S_t = s_t, A_t = a_t]$$
+$$
+\mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t] = \sum_{s_{t+1}} V(s_{t+1}) p(s_{t+1} \mid s_t, a_t) = \mathbb{E}[V_{t+1} \mid S_t = s_t, A_t = a_t]
+$$
 
 因此可以得到一个常用的形式：
 
@@ -315,7 +352,7 @@ $$
 
 $$
 Q_{\pi}(s_t, a_t) = \mathbb{E}_{\pi} [R_t + \gamma V_{\pi}(S_{t+1}) \mid S_t = s_t, A_t = a_t]
-$$ 
+$$
 
 <a id="references"></a>
 ## 参考资料
