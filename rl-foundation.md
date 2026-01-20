@@ -311,7 +311,7 @@ $$
 
 ### 推导如下:
 
-#### 首先将$Q(s_t, a_t)$展开
+#### 首先将 $Q(s_t, a_t)$展开
 $$
 \begin{aligned}
 Q(s_t, a_t) &= \mathbb{E}[G_t \mid S_t = s_t, A_t = a_t] \quad \text{（动作价值函数的定义）} \\
@@ -325,20 +325,20 @@ $$
 
 * 同理把 $\mathbf{E}[G_{t+1} \mid S_t = s_t, A_t = a_t]$ 用全期望公式按下一状态 $S_{t+1}$ 展开：
 
-  $$
+$$
   \mathbf{E}[G_{t+1} \mid S_t = s_t, A_t = a_t] = \sum_{s_{t+1}} \mathbf{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] p(s_{t+1} \mid s_t, a_t)
-  $$
+$$
 
 * 由马尔可夫性，给定 $S_{t+1}$ 后，未来回报 $G_{t+1}$ 与过去 $(S_t, A_t)$ 无关，因此：
 
-  $$
+$$
   \mathbf{E}[G_{t+1} \mid S_t = s_t, A_t = a_t, S_{t+1} = s_{t+1}] = \mathbf{E}[G_{t+1} \mid S_{t+1} = s_{t+1}] = V(s_{t+1})
-  $$
+$$
 
 将其代回上一个式子得，
 
 $$
-\mathbb{E}[G_{t+1} \mid S_t = s_t, A_t = a_t] = \sum_{s_{t+1}} V(s_{t+1}) p(s_{t+1} \mid s_t, a_t) = \mathbb{E}[V_{t+1} \mid S_t = s_t, A_t = a_t]
+\mathbf{E}[G_{t+1} \mid S_t = s_t, A_t = a_t] = \sum_{s_{t+1}} V(s_{t+1}) p(s_{t+1} \mid s_t, a_t) = \mathbf{E}[V_{t+1} \mid S_t = s_t, A_t = a_t]
 $$
 
 因此可以得到一个常用的形式：
