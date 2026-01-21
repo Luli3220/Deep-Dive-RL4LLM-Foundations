@@ -58,10 +58,10 @@ $$
 
 #### 1. 重要性采样 (Importance Sampling)
 * 它是一种统计学技巧，允许我们通过从分布 $q$ （旧策略）中采样的样本，来估计分布 $p$ （当前策略）下的期望。其核心数学形式为([详细推导见](#重要采样))：
-  
-  $$
-  \mathbb{E}_{x \sim p}[f(x)] = \mathbb{E}_{x \sim q}\left[ \frac{p(x)}{q(x)} f(x) \right]
-  $$
+
+$$
+\mathbb{E}_{x \sim p}[f(x)] = \mathbb{E}_{x \sim q}\left[ \frac{p(x)}{q(x)} f(x) \right]
+$$
 
 可以观察到，这里将基于 $p$  的概率分布的期望转换为基于 $q$ 的概率分布的期望
 等价于 ( $\pi_{\theta}(a_t,s_t)$ ) $->$  ( $\pi_{\theta _{old}}(a_t,s_t)$ ),这样我们就可以用老的样本来更新我们的策略了！
@@ -138,6 +138,7 @@ $$
    $$
 
 **转换回期望形式**：根据期望定义，我们得到最终形式：
+
    $$
    \mathbb{E}_{x \sim p}[f(x)] = \mathbb{E}_{x \sim q}\left[ \frac{p(x)}{q(x)} f(x) \right]
    $$
