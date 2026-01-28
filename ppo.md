@@ -172,16 +172,18 @@ $$
 
 **最终的优化目标**（最大化）如下：
 
-$$L_t^{CLIP+VF+S}(\theta) = \hat{\mathbb{E}}_t \left[ \underbrace{L_t^{CLIP}(\theta)}_{\text{让策略更好}} - c_1 \underbrace{L_t^{VF}(\theta)}_{\text{让评分更准}} + c_2 \underbrace{S[\pi_\theta](s_t)}_{\text{鼓励探索}} \right]$$
+$$
+L_t^{CLIP+VF+S}(\theta) = \hat{\mathbb{E}}_t \left[ \underbrace{L_t^{CLIP}(\theta)}_{\text{让策略更好}} - c_1 \underbrace{L_t^{VF}(\theta)}_{\text{让评分更准}} + c_2 \underbrace{S[\pi_\theta](s_t)}_{\text{鼓励探索}} \right]
+$$
 
 **参数说明：**
 * $c_1, c_2$：平衡各项权重的超参数。
 * **$S$：熵奖励项（Entropy Bonus）**
-    *   **公式**：$S[\pi_\theta](s_t) = - \sum_{a} \pi_\theta(a|s_t) \log \pi_\theta(a|s_t)$。
+    *   **公式**： $S[\pi_\theta](s_t) = - \sum_{a} \pi_\theta(a|s_t) \log \pi_\theta(a|s_t)$。
     *   **作用**：衡量策略分布的“混乱程度”或“随机性”。熵越大，分布越平坦（每个动作概率差不多）；熵越小，分布越尖锐（确定性地选某几个动作）。
     *   **目的**：鼓励探索（Exploration）。在训练初期，防止模型过早地“迷信”某个局部最优动作（Collapse to deterministic policy），强迫它多尝试其他可能性。
 * **$L_t^{VF}$：价值函数损失（Value Function Loss）**
-    *   **公式**：$L_t^{VF} = (V_\theta(s_t) - V_t^{target})^2$（均方误差 MSE）。
+    *   **公式**： $L_t^{VF} = (V_\theta(s_t) - V_t^{target})^2$（均方误差 MSE）。
     *   **作用**：训练 Critic 网络（价值网络），使其能够准确预测当前状态 $s_t$ 的真实价值。
     *   **目标值 $V_t^{target}$**：通常使用真实的回报 $G_t$ 或者更稳定的估计值 $V(s_t) + \hat{A}_t$ 来作为监督信号。
 
@@ -194,7 +196,7 @@ $$L_t^{CLIP+VF+S}(\theta) = \hat{\mathbb{E}}_t \left[ \underbrace{L_t^{CLIP}(\th
 我们现在有三个函数定义，如下：
 * **状态价值 $V(s_t)$**：当前状态 $s$ 下，未来收益的期望。
 * **动作价值 $Q(s_t, a_t)$**：在 $s$ 采取 $a$ 后，未来收益的期望。
-* **优势函数 $A(s_t, a_t)$**：$A(s_t, a_t) = Q(s_t, a_t) - V(s_t)$。
+* **优势函数 $A(s_t, a_t)$**： $A(s_t, a_t) = Q(s_t, a_t) - V(s_t)$。
 
 在实际训练中，我们一般用一个共享参数模型去估计状态价值，但无法知道的 $Q$ 值，但可以根据前一章介绍的贝尔曼方程去估计它。
 
@@ -220,6 +222,7 @@ $$\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$$
 $$ Q(s_t, a_t) \approx G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \dots + \gamma^{T-t} r_T $$
 
 此时优势函数为：
+
 $$ A_t^{MC} = G_t - V(s_t) $$
 
 *   **优点**：**无偏 (Unbiased)**。因为是真实发生的累计奖励，只要采样够多，均值一定是对的。
@@ -243,6 +246,7 @@ $$ A_t^{MC} = G_t - V(s_t) $$
 它引入一个超参数 $\lambda \in [0, 1]$，把从 1 步到 $\infty$ 步的所有估计值，按指数衰减的权重加在一起。
 
 公式最终简化为（具体推导见[GAE 公式推导](#GAE)）：
+
 $$\hat{A}_t^{GAE} = \delta_t + (\gamma \lambda) \delta_{t+1} + (\gamma \lambda)^2 \delta_{t+2} + \dots = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}$$
 
 其中 $\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$ 就是我们最开始提到的 TD 误差。
@@ -265,6 +269,7 @@ $$\hat{A}_t^{GAE} = \delta_t + (\gamma \lambda) \delta_{t+1} + (\gamma \lambda)^
 最后，我们将所有组件串联起来。这是一个标准的 **Actor-Critic 风格** 的 PPO 训练循环：
 
 **Algorithm 1** PPO, Actor-Critic Style
+
 ---
 1:  **for** iteration = 1, 2, ... **do**
 2:  &emsp;&emsp;**for** actor = 1, 2, ..., $N$ **do**
@@ -317,18 +322,25 @@ $$\hat{A}_t^{GAE} = \delta_t + (\gamma \lambda) \delta_{t+1} + (\gamma \lambda)^
 
 *   **1-step (TD)**: 
 
-    $$ \hat{A}_t^{(1)} = \delta_t = -V(s_t) + r_t + \gamma V(s_{t+1}) $$
+$$ \hat{A}_t^{(1)} = \delta_t = -V(s_t) + r_t + \gamma V(s_{t+1}) $$
 
     根据前一章推导的贝尔曼方程 $V(s_{t+1})=r_{t+1}+\gamma V(s_{t+2})$ 得到：
 *   **2-step**: 
-    $$ \hat{A}_t^{(2)} = -V(s_t) + r_t + \gamma r_{t+1} + \gamma^2 V(s_{t+2}) $$
+    
+$$ \hat{A}_t^{(2)} = -V(s_t) + r_t + \gamma r_{t+1} + \gamma^2 V(s_{t+2}) $$
+    
     利用 $\delta_{t+1} = -V(s_{t+1}) + r_{t+1} + \gamma V(s_{t+2})$，我们可以将 $V(s_{t+2})$ 替换掉，得到：
-    $$ \hat{A}_t^{(2)} = \delta_t + \gamma \delta_{t+1} $$
+
+$$ \hat{A}_t^{(2)} = \delta_t + \gamma \delta_{t+1} $$
+
 *   **3-step**: 
-    $$ \hat{A}_t^{(3)} = \delta_t + \gamma \delta_{t+1} + \gamma^2 \delta_{t+2} $$
+
+$$ \hat{A}_t^{(3)} = \delta_t + \gamma \delta_{t+1} + \gamma^2 \delta_{t+2} $$
+
 *   ...
 *   **k-step**: 
-    $$ \hat{A}_t^{(k)} = \sum_{l=0}^{k-1} \gamma^l \delta_{t+l} = -V(s_t) + r_t + \gamma r_{t+1} + \dots + \gamma^{k-1} r_{t+k-1} + \gamma^k V(s_{t+k}) $$
+    
+$$ \hat{A}_t^{(k)} = \sum_{l=0}^{k-1} \gamma^l \delta_{t+l} = -V(s_t) + r_t + \gamma r_{t+1} + \dots + \gamma^{k-1} r_{t+k-1} + \gamma^k V(s_{t+k}) $$
 
 ---
 
@@ -355,11 +367,13 @@ $$
 $$
 
 提取公因式 $\lambda^l$：
+
 $$
 \text{Coeff}(\delta_{t+l}) = (1-\lambda) \gamma^l \lambda^l (1 + \lambda + \lambda^2 + \dots)
 $$
 
 利用几何级数求和公式 $\sum_{i=0}^\infty \lambda^i = \frac{1}{1-\lambda}$：
+
 $$
 \text{Coeff}(\delta_{t+l}) = (1-\lambda) (\gamma \lambda)^l \frac{1}{1-\lambda} = (\gamma \lambda)^l
 $$
@@ -375,6 +389,7 @@ $$
 $$
 
 这也就是我们在代码中常用的递归计算形式：
+
 $$ \hat{A}_t = \delta_t + (\gamma \lambda) \hat{A}_{t+1} $$
 
 
