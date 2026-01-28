@@ -179,7 +179,7 @@ L_t^{CLIP+VF+S}(\theta) = \hat{\mathbb{E}}_t \left[ \underbrace{L_t^{CLIP}(\thet
 **参数说明：**
 * $c_1, c_2$：平衡各项权重的超参数。
 * **$S$：熵奖励项（Entropy Bonus）**
-    *   **公式**： $S[\pi_{\theta}](s_t) = - \sum_{a} \pi_{\theta}(a|s_t) \log \pi_{\theta}(a|s_t)$ 。
+    *   **公式**： $S[{\pi}_{\theta}](s_t) = - \sum_{a} \pi_{\theta}(a|s_t) \log \pi_{\theta}(a|s_t)$ 。
     *   **作用**：衡量策略分布的“混乱程度”或“随机性”。熵越大，分布越平坦（每个动作概率差不多）；熵越小，分布越尖锐（确定性地选某几个动作）。
     *   **目的**：鼓励探索（Exploration）。在训练初期，防止模型过早地“迷信”某个局部最优动作（Collapse to deterministic policy），强迫它多尝试其他可能性。
 * **$L_t^{VF}$：价值函数损失（Value Function Loss）**
