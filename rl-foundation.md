@@ -256,7 +256,7 @@ $$
 
 ### 推导如下:
 
-#### 首先将$V(s_t)$展开
+#### 首先将 $V(s_t)$展开
 
 $$
 \begin{aligned}
@@ -359,8 +359,8 @@ $$
 <a id="references"></a>
 ## 参考资料
 
-- https://misaka0502.github.io/2025/03/14/return-value-q-advantage-in-rl/
-- https://blog.csdn.net/qq_41936559/article/details/142644560
+- [强化学习中回报（Return）、价值（Value）、动作价值（Action-Value）和优势（Advantage）的联系](https://misaka0502.github.io/2025/03/14/return-value-q-advantage-in-rl/)
+- [“贝尔曼方程”那些事儿:含贝尔曼方程详细推导，通俗易懂](https://blog.csdn.net/qq_41936559/article/details/142644560)
 
 
 
