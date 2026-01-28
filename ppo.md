@@ -167,31 +167,31 @@ $$
 在 PPO 实现中（如 GPT 的训练），通常采用 **Actor** 和 **Critic** 共享部分参数的架构。因此，我们的最终损失函数需要包含三部分：
 
 1.  **策略损失 (Policy Loss)**：即我们前面推导的 $L^{CLIP}$，用于让模型生成更好的动作。
-2.  **价值损失 (Value Loss)**：$L^{VF}$，让 Critic 网络更准确地预测当前状态的价值 $V(s)$。这通常是一个均方误差（MSE）。
-3.  **熵奖励 (Entropy Bonus)**：$S$，鼓励策略保持一定的随机性（Entropy），防止模型过早收敛到局部最优（即防止它太“自信”地只输出某一种结果）。
+2.  **价值损失 (Value Loss)**： $L^{VF}$，让 Critic 网络更准确地预测当前状态的价值 $V(s)$。这通常是一个均方误差（MSE）。
+3.  **熵奖励 (Entropy Bonus)**： $S$，鼓励策略保持一定的随机性（Entropy），防止模型过早收敛到局部最优（即防止它太“自信”地只输出某一种结果）。
 
 **最终的优化目标**（最大化）如下：
 
-$$
+``` math
 L_t^{CLIP+VF+S}(\theta) = \hat{\mathbb{E}}_t \left[ \underbrace{L_t^{CLIP}(\theta)}_{\text{让策略更好}} - c_1 \underbrace{L_t^{VF}(\theta)}_{\text{让评分更准}} + c_2 \underbrace{S[\pi_\theta](s_t)}_{\text{鼓励探索}} \right]
-$$
+```
 
 **参数说明：**
 * $c_1, c_2$：平衡各项权重的超参数。
 * **$S$：熵奖励项（Entropy Bonus）**
-    *   **公式**： $S[\pi_\theta](s_t) = - \sum_{a} \pi_\theta(a|s_t) \log \pi_\theta(a|s_t)$。
+    *   **公式**： $S[\pi_\theta](s_t) = - \sum_{a} \pi_\theta(a|s_t) \log \pi_\theta(a|s_t)$ 。
     *   **作用**：衡量策略分布的“混乱程度”或“随机性”。熵越大，分布越平坦（每个动作概率差不多）；熵越小，分布越尖锐（确定性地选某几个动作）。
     *   **目的**：鼓励探索（Exploration）。在训练初期，防止模型过早地“迷信”某个局部最优动作（Collapse to deterministic policy），强迫它多尝试其他可能性。
 * **$L_t^{VF}$：价值函数损失（Value Function Loss）**
     *   **公式**： $L_t^{VF} = (V_\theta(s_t) - V_t^{target})^2$（均方误差 MSE）。
     *   **作用**：训练 Critic 网络（价值网络），使其能够准确预测当前状态 $s_t$ 的真实价值。
-    *   **目标值 $V_t^{target}$**：通常使用真实的回报 $G_t$ 或者更稳定的估计值 $V(s_t) + \hat{A}_t$ 来作为监督信号。
+    *   **目标值:  $V_t^{target}$**：通常使用真实的回报 $G_t$ 或者更稳定的估计值 $V(s_t) + \hat{A}_t$ 来作为监督信号。
 
 ---
 
 ### 2. 优势函数计算 (Advantage Estimation)
 
-在第一章我们了解到了一些RL的基本概念，比如 $V$、$Q$ 和 $A$ 这几个函数，接下来我们来介绍如何将其运用到真实的RL训练中去。
+在第一章我们了解到了一些RL的基本概念，比如 $V$、 $Q$ 和 $A$ 这几个函数，接下来我们来介绍如何将其运用到真实的RL训练中去。
 
 我们现在有三个函数定义，如下：
 * **状态价值 $V(s_t)$**：当前状态 $s$ 下，未来收益的期望。
@@ -268,18 +268,21 @@ $$\hat{A}_t^{GAE} = \delta_t + (\gamma \lambda) \delta_{t+1} + (\gamma \lambda)^
 
 最后，我们将所有组件串联起来。这是一个标准的 **Actor-Critic 风格** 的 PPO 训练循环：
 
-**Algorithm 1** PPO, Actor-Critic Style
-
----
-1:  **for** iteration = 1, 2, ... **do**
-2:  &emsp;&emsp;**for** actor = 1, 2, ..., $N$ **do**
-3:  &emsp;&emsp;&emsp;&emsp;Run policy $\pi_{\theta_{old}}$ in environment for $T$ timesteps
-4:  &emsp;&emsp;&emsp;&emsp;Compute advantage estimates $\hat{A}_1, \dots, \hat{A}_T$
-5:  &emsp;&emsp;**end for**
-6:  &emsp;&emsp;Optimize surrogate $L$ wrt $\theta$, with $K$ epochs and minibatch size $M \le NT$
-7:  &emsp;&emsp;$\theta_{old} \leftarrow \theta$
-8:  **end for**
----
+$$
+\begin{aligned}
+&\textbf{Algorithm 1 } \text{PPO, Actor-Critic Style} \\
+&\text{--------------------------------------------------------------------------------------------} \\
+&1: \mathbf{for} \text{ iteration } = 1, 2, \dots \mathbf{do} \\
+&2: \quad \mathbf{for} \text{ actor } = 1, 2, \dots, N \mathbf{do} \\
+&3: \quad \quad \text{Run policy } \pi_{\theta_{\text{old}}} \text{ in environment for } T \text{ timesteps} \\
+&4: \quad \quad \text{Compute advantage estimates } \hat{A}_1, \dots, \hat{A}_T \\
+&5: \quad \mathbf{end \ for} \\
+&6: \quad \text{Optimize surrogate } L \text{ wrt } \theta, \text{ with } K \text{ epochs and minibatch size } M \le NT \\
+&7: \quad \theta_{\text{old}} \leftarrow \theta \\
+&8: \mathbf{end \ for} \\
+&\text{--------------------------------------------------------------------------------------------}
+\end{aligned}
+$$
 
 
 ## 详细推导
@@ -324,12 +327,13 @@ $$\hat{A}_t^{GAE} = \delta_t + (\gamma \lambda) \delta_{t+1} + (\gamma \lambda)^
 
 $$ \hat{A}_t^{(1)} = \delta_t = -V(s_t) + r_t + \gamma V(s_{t+1}) $$
 
-    根据前一章推导的贝尔曼方程 $V(s_{t+1})=r_{t+1}+\gamma V(s_{t+2})$ 得到：
+根据前一章推导的贝尔曼方程 $V(s_{t+1})=r_{t+1}+\gamma V(s_{t+2})$ 得到：
+
 *   **2-step**: 
     
 $$ \hat{A}_t^{(2)} = -V(s_t) + r_t + \gamma r_{t+1} + \gamma^2 V(s_{t+2}) $$
     
-    利用 $\delta_{t+1} = -V(s_{t+1}) + r_{t+1} + \gamma V(s_{t+2})$，我们可以将 $V(s_{t+2})$ 替换掉，得到：
+利用 $\delta_{t+1} = -V(s_{t+1}) + r_{t+1} + \gamma V(s_{t+2})$，我们可以将 $V(s_{t+2})$ 替换掉，得到：
 
 $$ \hat{A}_t^{(2)} = \delta_t + \gamma \delta_{t+1} $$
 
@@ -359,9 +363,11 @@ $$
 **3. 合并同类项 (推导核心)**
 
 我们要统计每一个 $\delta_{t+l}$ 前面的系数。
-对于 $\delta_{t+l}$，它出现在 $\hat{A}_t^{(l+1)}, \hat{A}_t^{(l+2)}, \dots$ 等所有后续项中。
-因此，$\delta_{t+l}$ 的总系数为：
 
+对于 $\delta_{t+l}$，它出现在如下所有后续项中：
+$$\hat{A}_t^{(l+1)}, \hat{A}_t^{(l+2)}, \dots$$
+
+因此，$\delta_{t+l}$ 的总系数为：
 $$
 \text{Coeff}(\delta_{t+l}) = (1-\lambda) \gamma^l (\lambda^l + \lambda^{l+1} + \lambda^{l+2} + \dots)
 $$
